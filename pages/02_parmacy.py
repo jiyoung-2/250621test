@@ -3,33 +3,19 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-
-
 st.set_page_config(page_title="서울시 약국 지도", layout="wide")
 
-st.title("💊 서울시 자치구별 약국 위치 및 운영 시간 안내")
+st.title("💊 서울시 약국 위치 및 운영 시간 안내")
 
 # CSV 파일 로드
-df = pd.read_csv("https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv",encoding="utf-8")
-
-#gpt가 알려준 해법 -> 근데 안됨ㅜㅜ
-#url = "https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv"
-#df = pd.read_csv(url, encoding="cp949")  # 또는 encoding="utf-8"로 테스트
-
-
-# 필수 컬럼 예시 (컬럼명은 실제 파일에 맞게 조정)
-# ['약국명', '주소', '자치구', '위도', '경도', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
+df = pd.read_csv("https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv", encoding="utf-8")
 
 # 지도 중심 좌표 설정 (서울 중심)
 seoul_center = [37.5665, 126.9780]
 m = folium.Map(location=seoul_center, zoom_start=11)
 
-# 자치구 선택
-gu_list = df['자치구'].unique().tolist()
-selected_gu = st.multiselect("📍 자치구를 선택하세요", options=gu_list, default=gu_list)
-
-# 필터링
-filtered_df = df[df['자치구'].isin(selected_gu)]
+# 자치구 선택 기능 제거 → 전체 데이터 사용
+filtered_df = df.copy()
 
 # 지도에 약국 추가
 for _, row in filtered_df.iterrows():
@@ -50,6 +36,3 @@ for _, row in filtered_df.iterrows():
 
 # Streamlit에 Folium 지도 표시
 st_folium(m, width=1000, height=700)
-
-
-
