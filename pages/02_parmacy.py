@@ -1,65 +1,51 @@
 import streamlit as st
-import yfinance as yf
-import plotly.graph_objects as go
+import pandas as pd
+import folium
+from streamlit_folium import st_folium
 pd.read_csv("https://github.com/jiyoung-2/250621test/blob/main/seoul_parmacy.csv", encoding="cp949")
 
 
-st.set_page_config(page_title="Global Market Cap Top 10", layout="wide")
 
-st.title("🌍 글로벌 시가총액 Top 10 기업 📈")
+st.set_page_config(page_title="서울시 약국 지도", layout="wide")
 
-# 미리 선정한 글로벌 시가총액 상위 10개 기업의 티커 (2024 기준)
-tickers = {
-    "Apple": "AAPL",
-    "Microsoft": "MSFT",
-    "Saudi Aramco": "2222.SR",  # 사우디 증시
-    "Alphabet (Google)": "GOOGL",
-    "Amazon": "AMZN",
-    "Nvidia": "NVDA",
-    "Meta": "META",
-    "Berkshire Hathaway": "BRK-B",
-    "TSMC": "TSM",
-    "Eli Lilly": "LLY"
-}
+st.title("💊 서울시 자치구별 약국 위치 및 운영 시간 안내")
 
-market_caps = {}
-currency = {}
+# CSV 파일 로드
+df = pd.read_csv("seoul_parmacy.csv")
 
-# 데이터 수집
-for name, ticker in tickers.items():
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        market_cap = info.get("marketCap", None)
-        cur = info.get("financialCurrency", "USD")
-        if market_cap:
-            market_caps[name] = market_cap
-            currency[name] = cur
-    except Exception as e:
-        st.warning(f"{name} 데이터 로딩 실패: {e}")
+# 필수 컬럼 예시 (컬럼명은 실제 파일에 맞게 조정)
+# ['약국명', '주소', '자치구', '위도', '경도', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
 
-# 정렬
-sorted_data = sorted(market_caps.items(), key=lambda x: x[1], reverse=True)
+# 지도 중심 좌표 설정 (서울 중심)
+seoul_center = [37.5665, 126.9780]
+m = folium.Map(location=seoul_center, zoom_start=11)
 
-# 시각화용 데이터
-names = [item[0] for item in sorted_data]
-caps = [item[1] / 1e12 for item in sorted_data]  # 단위: 조(Trillion USD)
+# 자치구 선택
+gu_list = df['자치구'].unique().tolist()
+selected_gu = st.multiselect("📍 자치구를 선택하세요", options=gu_list, default=gu_list)
 
-fig = go.Figure(data=[
-    go.Bar(
-        x=names,
-        y=caps,
-        text=[f"${cap:.2f}T" for cap in caps],
-        textposition='auto',
-        marker_color='indianred'
-    )
-])
+# 필터링
+filtered_df = df[df['자치구'].isin(selected_gu)]
 
-fig.update_layout(
-    title="🌐 글로벌 시가총액 Top 10 기업 (단위: Trillion USD)",
-    xaxis_title="기업명",
-    yaxis_title="시가총액 (Trillion USD)",
-    template="plotly_white"
-)
+# 지도에 약국 추가
+for _, row in filtered_df.iterrows():
+    name = row['약국명']
+    lat = row['위도']
+    lon = row['경도']
 
-st.plotly_chart(fig, use_container_width=True)
+    # 요일별 운영시간 정보 수집
+    days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
+    hours = "<br>".join([f"{day}: {row.get(day, '정보 없음')}" for day in days])
+
+    popup_text = f"<b>{name}</b><br>{row['주소']}<br><br>{hours}"
+    folium.Marker(
+        location=[lat, lon],
+        popup=folium.Popup(popup_text, max_width=300),
+        icon=folium.Icon(color="blue", icon="plus-sign")
+    ).add_to(m)
+
+# Streamlit에 Folium 지도 표시
+st_folium(m, width=1000, height=700)
+
+
+
