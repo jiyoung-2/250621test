@@ -1,2 +1,2 @@
 import streamlit as st
-st.image(https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNibHRpZWQ4ajc1MXBoaHNwZm0xaGxsd3JsaGYya3l6dXJucXhsbDRqcCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/fdHEuiq2E0PKwxbCLr/giphy.gif)
+st.image(https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXIycHNnOWZmdGhxZm9oc2tnZzYydGJ0MnltNm1iYTVsajZhemZ3NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fdHEuiq2E0PKwxbCLr/giphy.gif)
