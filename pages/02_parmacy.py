@@ -1,38 +1,24 @@
 import streamlit as st
 import pandas as pd
-import folium
-from streamlit_folium import st_folium
 
-st.set_page_config(page_title="서울시 약국 지도", layout="wide")
+# 데이터 불러오기
+url = "https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv"
+df = pd.read_csv(url, encoding="cp949")
 
-st.title("💊 서울시 약국 위치 및 운영 시간 안내")
+# 열 이름 공백 제거
+df.columns = df.columns.str.strip()
 
-# CSV 파일 로드
-df = pd.read_csv("https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv", encoding="utf-8")
+# 필요한 열만 선택
+columns_needed = ['주소', '약국명', '대표전화', '경도', '위도']
+df = df[columns_needed]
 
-# 지도 중심 좌표 설정 (서울 중심)
-seoul_center = [37.5665, 126.9780]
-m = folium.Map(location=seoul_center, zoom_start=11)
+# GUI 제목
+st.title("서울시 약국 위치 및 정보")
 
-# 자치구 선택 기능 제거 → 전체 데이터 사용
-filtered_df = df.copy()
+# 지도 표시 (경도/위도 → lon/lat 이름으로 변경 필요)
+map_df = df.rename(columns={"위도": "lat", "경도": "lon"}).dropna(subset=["lat", "lon"])
+st.map(map_df)
 
-# 지도에 약국 추가
-for _, row in filtered_df.iterrows():
-    name = row['약국명']
-    lat = row['위도']
-    lon = row['경도']
-
-    # 요일별 운영시간 정보 수집
-    days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
-    hours = "<br>".join([f"{day}: {row.get(day, '정보 없음')}" for day in days])
-
-    popup_text = f"<b>{name}</b><br>{row['주소']}<br><br>{hours}"
-    folium.Marker(
-        location=[lat, lon],
-        popup=folium.Popup(popup_text, max_width=300),
-        icon=folium.Icon(color="blue", icon="plus-sign")
-    ).add_to(m)
-
-# Streamlit에 Folium 지도 표시
-st_folium(m, width=1000, height=700)
+# 상세정보 확인용 테이블
+st.subheader("약국 상세 정보")
+st.dataframe(df.reset_index(drop=True))
