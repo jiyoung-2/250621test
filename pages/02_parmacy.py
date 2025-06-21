@@ -10,7 +10,11 @@ st.set_page_config(page_title="서울시 약국 지도", layout="wide")
 st.title("💊 서울시 자치구별 약국 위치 및 운영 시간 안내")
 
 # CSV 파일 로드
-pd.read_csv("https://github.com/jiyoung-2/250621test/blob/main/seoul_parmacy.csv", encoding="cp949")
+# pd.read_csv("https://github.com/jiyoung-2/250621test/blob/main/seoul_parmacy.csv", encoding="cp949")
+
+url = "https://raw.githubusercontent.com/jiyoung-2/250621test/main/seoul_parmacy.csv"
+df = pd.read_csv(url, encoding="cp949")  # 또는 encoding="utf-8"로 테스트
+
 
 # 필수 컬럼 예시 (컬럼명은 실제 파일에 맞게 조정)
 # ['약국명', '주소', '자치구', '위도', '경도', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
